@@ -108,7 +108,7 @@ const displayBookHandler = (request, h) => {
 
   if (finished !== undefined) {
     const seeBook = books.filter(
-      (book) => book.finished === finished
+      (book) => book.finished === (parseInt(finished) === 1)
     )
 
     const response = h.response({
