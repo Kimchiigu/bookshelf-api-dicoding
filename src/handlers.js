@@ -2,7 +2,14 @@ const { nanoid } = require("nanoid")
 const books = require('./bookshelf')
 
 const addBookHandler = (request, h) => {
-    const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
+    const { name,
+        year,
+        author,
+        summary,
+        publisher,
+        pageCount,
+        readPage,
+        reading } = request.payload;
 
     const id = nanoid(16);
     const insertedAt = new Date().toISOString();
@@ -28,7 +35,18 @@ const addBookHandler = (request, h) => {
     }
 
     const newBook = {
-        id, name, year, author, summary, publisher, pageCount, readPage, finished, reading, insertedAt, updatedAt
+        id,
+        name,
+        year,
+        author,
+        summary,
+        publisher,
+        pageCount,
+        readPage,
+        finished,
+        reading,
+        insertedAt,
+        updatedAt
     };
 
     books.push(newBook);
@@ -48,23 +66,84 @@ const addBookHandler = (request, h) => {
     }
 };
 
-const displayBookHandler = () => ({
-    status: 'success',
-    data: {
-        books: books.map(book => ({
-            id: book.id,
-            name: book.name,
-            publisher: book.publisher
-        }))
+const displayBookHandler = (request, h) => {
+    const { name, reading, finished } = request.query;
+
+    if (name !== undefined) {
+        const seeBook = books.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
+        const response = h.response({
+            status: 'success',
+            data: {
+                books: seeBook.map((book) => ({
+                    id: book.id,
+                    name: book.name,
+                    publisher: book.publisher,
+                })),
+            },
+        });
+        response.code(200);
+        return response;
     }
-})
+
+    if (reading !== undefined) {
+        const seeBook = books.filter(
+            (book) => Number(book.reading) === Number(reading),
+        );
+
+        const response = h.response({
+            status: 'success',
+            data: {
+                books: seeBook.map((book) => ({
+                    id: book.id,
+                    name: book.name,
+                    publisher: book.publisher,
+                })),
+            },
+        });
+        response.code(200);
+        return response;
+
+    } 
+    
+    if (finished !== undefined) {
+        const seeBook = books.filter(
+            (book) => book.finished == finished,
+        );
+
+        const response = h.response({
+            status: 'success',
+            data: {
+                books: seeBook.map((book) => ({
+                    id: book.id,
+                    name: book.name,
+                    publisher: book.publisher,
+                })),
+            },
+        });
+        response.code(200);
+        return response;
+    } 
+
+    const response = h.response({
+        status: 'success',
+        data: {
+            books: books.map((book) => ({
+                id: book.id,
+                name: book.name,
+                publisher: book.publisher,
+            })),
+        },
+    });
+    response.code(200);
+    return response;
+};
 
 const detailBookHandler = (request, h) => {
     const { id } = request.params
 
     const book = books.filter((b) => b.id === id)[0]
 
-    if(book !== undefined){
+    if (book !== undefined) {
         const response = h.response({
             status: 'success',
             data: {
@@ -89,7 +168,7 @@ const updateBookHandler = (request, h) => {
     const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload
     const updatedAt = new Date().toISOString()
 
-    if(!name || name.trim() === ""){
+    if (!name || name.trim() === "") {
         const response = h.response({
             status: 'fail',
             message: 'Gagal memperbarui buku. Mohon isi nama buku'
@@ -98,7 +177,7 @@ const updateBookHandler = (request, h) => {
         return response
     }
 
-    if(readPage > pageCount){
+    if (readPage > pageCount) {
         const response = h.response({
             status: 'fail',
             message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount'
@@ -109,9 +188,18 @@ const updateBookHandler = (request, h) => {
 
     const index = books.findIndex((book) => book.id === id)
 
-    if(index !== -1){
+    if (index !== -1) {
         books[index] = {
-            ...books[index], name, year, author, summary, publisher, pageCount, readPage, reading, updatedAt
+            ...books[index],
+            name,
+            year,
+            author,
+            summary,
+            publisher,
+            pageCount,
+            readPage,
+            reading,
+            updatedAt
         }
 
         const response = h.response({
